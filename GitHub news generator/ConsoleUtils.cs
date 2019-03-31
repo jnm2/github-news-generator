@@ -6,6 +6,19 @@ namespace GitHubNewsGenerator
 {
     public static class ConsoleUtils
     {
+        private static readonly IReadOnlyDictionary<char, string> YesNoChoices = new Dictionary<char, string>
+        {
+            ['y'] = "yes",
+            ['n'] = "no"
+        };
+
+        public static bool ChooseYesNo(string message)
+        {
+            Console.Write(message.TrimEnd() + ' ');
+
+            return ReadChoice(YesNoChoices) == 'y';
+        }
+
         public static char Choose(string message)
         {
             var options = Regex.Matches(message, @"\[(?<char>[^\[\]])\](?<rest>[\w ]+)");
@@ -27,6 +40,11 @@ namespace GitHubNewsGenerator
 
             DisplayChoice(message, options);
 
+            return ReadChoice(fullTextByOptionChar);
+        }
+
+        private static char ReadChoice(IReadOnlyDictionary<char, string> fullTextByOptionChar)
+        {
             var chosen = '\0';
             var currentText = string.Empty;
 

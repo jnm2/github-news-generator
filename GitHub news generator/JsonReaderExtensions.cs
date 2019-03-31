@@ -19,12 +19,12 @@ namespace GitHubNewsGenerator
                 innerException: null);
         }
 
-        public static async ValueTask ReadStartArrayAsync(this JsonReader reader)
+        public static async ValueTask ReadStartArrayAsync(this JsonReader reader, CancellationToken cancellationToken)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            if (!await reader.ReadAsync().ConfigureAwait(false) || reader.TokenType != JsonToken.StartArray)
+            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false) || reader.TokenType != JsonToken.StartArray)
                 throw reader.CreateException("Expected start of array.");
         }
 

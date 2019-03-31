@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHubNewsGenerator
@@ -12,7 +15,7 @@ namespace GitHubNewsGenerator
             var minDate = new DateTime(2019, 01, 31);
 
             Console.WriteLine($"Starting date: {minDate:d}");
-            Console.Write("GitHub access token (needs public_repo): ");
+            Console.Write("GitHub access token (needs 'public_repo' and optionally 'gist'): ");
             var accessToken = Console.ReadLine();
 
             Console.WriteLine();
@@ -26,29 +29,57 @@ namespace GitHubNewsGenerator
 
             var title = $"NUnit GitHub Activity {minDate:MMM d} to {today:MMM d}";
 
-            switch (ConsoleUtils.Choose("Would you like the results to go to the [c]lipboard, a [f]ile, or [v]iew them here?"))
+            switch (ConsoleUtils.Choose("Would you like the results to go to the [c]lipboard, a [g]ist, a [f]ile, or [v]iew them here?"))
             {
                 case 'c':
+                {
                     var builder = new StringWriter();
                     FormatNewsInfo(builder, title, info);
                     Clipboard.SetText(builder.ToString());
 
                     Console.WriteLine("Results copied to the clipboard.");
                     break;
+                }
+                case 'g':
+                {
+                    var isPrivate = ConsoleUtils.ChooseYesNo("Create as a private gist?");
 
+                    var builder = new StringWriter();
+                    FormatNewsInfo(builder, title, info);
+
+                    using (var client = new GitHubRestClient("GitHubRestClient", accessToken))
+                    {
+                        var url = await client.CreateGistAsync(
+                            description: title,
+                            !isPrivate,
+                            contentByFileName: new Dictionary<string, string>
+                            {
+                                [title + ".md"] = builder.ToString()
+                            },
+                            CancellationToken.None).ConfigureAwait(false);
+
+                        Console.WriteLine("Gist created at: " + url);
+                        Process.Start(new ProcessStartInfo { UseShellExecute = true, FileName = url.ToString() });
+                        Console.WriteLine("Opened in browser.");
+                    }
+                    break;
+                }
                 case 'f':
+                {
                     var filename = title + ".md";
                     using (var file = File.CreateText(filename))
                         FormatNewsInfo(file, title, info);
 
                     Console.WriteLine($"Results saved to file {filename} in the current directory.");
                     break;
-
+                }
                 case 'v':
+                {
                     Console.WriteLine();
                     Console.WriteLine();
                     FormatNewsInfo(Console.Out, title, info);
                     break;
+                }
             }
         }
 

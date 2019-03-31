@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -14,32 +10,14 @@ using Newtonsoft.Json.Linq;
 
 namespace GitHubNewsGenerator.GitHubGraphQL
 {
-    public sealed class GitHubGraphQLClient : IDisposable
+    public sealed class GitHubGraphQLClient : GitHubClient
     {
-        private readonly HttpClient client;
-
         public GitHubGraphQLClient(string userAgent, string accessToken)
+            : base(baseAddress: "https://api.github.com/graphql", userAgent, accessToken)
         {
-            client = new HttpClient(new HttpClientHandler
-            {
-                AutomaticDecompression = ~DecompressionMethods.None
-            })
-            {
-                BaseAddress = new Uri("https://api.github.com/graphql"),
-                DefaultRequestHeaders =
-                {
-                    Authorization = new AuthenticationHeaderValue("bearer", accessToken),
-                    UserAgent = { ProductInfoHeaderValue.Parse(userAgent) }
-                }
-            };
         }
 
-        public void Dispose()
-        {
-            client.Dispose();
-        }
-
-        public Task GetStreamReaderAsync(string query, CancellationToken cancellationToken)
+        public Task<StreamReader> GetStreamReaderAsync(string query, CancellationToken cancellationToken)
         {
             return GetStreamReaderAsync(query, variables: null, cancellationToken);
         }
@@ -49,27 +27,9 @@ namespace GitHubNewsGenerator.GitHubGraphQL
             if (string.IsNullOrWhiteSpace(query))
                 throw new ArgumentException("Query must be specified.", nameof(query));
 
-            using (var memoryStream = new MemoryStream())
-            {
-                using (var writer = new StreamWriter(memoryStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), bufferSize: 4096, leaveOpen: true))
-                {
-                    WriteBody(writer, query, variables);
-                }
-
-                memoryStream.Position = 0;
-
-                var response = await client.SendAsync(
-                    new HttpRequestMessage(HttpMethod.Post, string.Empty)
-                    {
-                        Content = new StreamContent(memoryStream)
-                    },
-                    HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken).ConfigureAwait(false);
-
-                response.EnsureSuccessStatusCode();
-
-                return await response.Content.ReadAsStreamReaderAsync().ConfigureAwait(false);
-            }
+            return await PostAsync(
+                buffer => WriteBody(buffer, query, variables),
+                cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<JToken> GetDataAsync(string query, IReadOnlyDictionary<string, object> variables, CancellationToken cancellationToken)
