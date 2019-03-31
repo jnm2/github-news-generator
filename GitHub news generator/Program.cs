@@ -91,12 +91,14 @@ namespace GitHubNewsGenerator
             writer.WriteLine("## Releases (also check VS extension gallery)");
             writer.WriteLine();
 
+            const string dateFormat = @"MMM d a\t h:mm tt";
+
             if (info.Releases.Any())
             {
                 foreach (var release in info.Releases.OrderBy(r => r.PublishedAt))
                 {
                     writer.WriteLine($"- **{release.Repo}** '{release.Name}'" + (release.IsPrerelease ? " (prerelease)" : null) + $" by {release.AuthorName ?? release.Author}  ");
-                    writer.WriteLine($"  Published at {release.PublishedAt}  ");
+                    writer.WriteLine($"  Published {release.PublishedAt.ToString(dateFormat)}  ");
                     writer.WriteLine($"  {release.Url}");
                     writer.WriteLine();
                 }
@@ -115,7 +117,7 @@ namespace GitHubNewsGenerator
                 foreach (var pullRequest in info.PullRequests.OrderBy(r => r.MergedAt))
                 {
                     writer.WriteLine($"- **{pullRequest.Repo}** '{pullRequest.Title}' by {pullRequest.AuthorName ?? pullRequest.Author}  ");
-                    writer.WriteLine($"  Merged at {pullRequest.MergedAt}  ");
+                    writer.WriteLine($"  Merged {pullRequest.MergedAt.ToString(dateFormat)}  ");
                     writer.WriteLine($"  {pullRequest.Url}");
                     writer.WriteLine();
                 }
@@ -134,7 +136,7 @@ namespace GitHubNewsGenerator
                 foreach (var issue in info.DocsIssues.OrderBy(r => r.ClosedAt))
                 {
                     writer.WriteLine($"- '{issue.Title}'  ");
-                    writer.WriteLine($"  Closed at {issue.ClosedAt}  ");
+                    writer.WriteLine($"  Closed {issue.ClosedAt.ToString(dateFormat)}  ");
                     writer.WriteLine($"  {issue.Url}");
                     writer.WriteLine();
                 }
