@@ -26,8 +26,8 @@ namespace GitHubNewsGenerator
             {
                 foreach (var release in info.Releases.OrderBy(r => r.PublishedAt))
                 {
-                    Console.WriteLine($"- **{release.Repo}** '{release.Name}'" + (release.IsPrerelease ? " (prerelease)" : null) + $" by {release.AuthorName ?? release.Author}");
-                    Console.WriteLine($"  Published at {release.PublishedAt}");
+                    Console.WriteLine($"- **{release.Repo}** '{release.Name}'" + (release.IsPrerelease ? " (prerelease)" : null) + $" by {release.AuthorName ?? release.Author}  ");
+                    Console.WriteLine($"  Published at {release.PublishedAt}  ");
                     Console.WriteLine($"  {release.Url}");
                     Console.WriteLine();
                 }
@@ -45,8 +45,8 @@ namespace GitHubNewsGenerator
             {
                 foreach (var pullRequest in info.PullRequests.OrderBy(r => r.MergedAt))
                 {
-                    Console.WriteLine($"- **{pullRequest.Repo}** '{pullRequest.Title}' by {pullRequest.AuthorName ?? pullRequest.Author}");
-                    Console.WriteLine($"  Merged at {pullRequest.MergedAt}");
+                    Console.WriteLine($"- **{pullRequest.Repo}** '{pullRequest.Title}' by {pullRequest.AuthorName ?? pullRequest.Author}  ");
+                    Console.WriteLine($"  Merged at {pullRequest.MergedAt}  ");
                     Console.WriteLine($"  {pullRequest.Url}");
                     Console.WriteLine();
                 }
@@ -64,8 +64,8 @@ namespace GitHubNewsGenerator
             {
                 foreach (var issue in info.DocsIssues.OrderBy(r => r.ClosedAt))
                 {
-                    Console.WriteLine($"- '{issue.Title}'");
-                    Console.WriteLine($"  Closed at {issue.ClosedAt}");
+                    Console.WriteLine($"- '{issue.Title}'  ");
+                    Console.WriteLine($"  Closed at {issue.ClosedAt}  ");
                     Console.WriteLine($"  {issue.Url}");
                     Console.WriteLine();
                 }
