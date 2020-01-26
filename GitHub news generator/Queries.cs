@@ -60,6 +60,8 @@ namespace GitHubNewsGenerator
             var releases = (JArray)repo["releases"]["nodes"];
             foreach (var release in releases)
             {
+                if (!release.HasValues) continue;
+
                 var publishedAt = (DateTime)release["publishedAt"];
                 if (publishedAt < minDate)
                 {
